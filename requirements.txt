@@ -1,0 +1,23 @@
+# Telegram Bot
+python-telegram-bot==20.7
+
+# Groq AI
+groq==0.4.1
+
+# HTTP clients
+httpx==0.25.2
+requests==2.31.0
+
+# Parsing and search
+feedparser==6.0.10
+duckduckgo-search==3.9.6
+newsapi-python==0.2.7
+
+# Scheduler
+APScheduler==3.10.4
+
+# Environment
+python-dotenv==1.0.0
+
+# Timezone
+pytz==2023.3
