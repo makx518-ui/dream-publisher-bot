@@ -44,19 +44,35 @@ class DreamOracleBot:
             print("="*60)
             
             # Шаг 1: Ищем контент
-            logger.info("📡 Поиск контента...")
+            logger.info("📡 ШАГ 1: Поиск контента...")
+            logger.info(f"Тема поиска: {custom_topic if custom_topic else 'автоматическая'}")
+            
             content_data = await self.content_finder.find_content(topic=custom_topic)
             
             if not content_data:
-                logger.error("❌ Контент не найден, пропускаю публикацию")
+                logger.error("❌ ОШИБКА: Контент не найден!")
+                logger.error("Возможные причины: NewsAPI не работает или нет статей по теме")
                 return False
             
+            logger.info(f"✅ Контент найден: {content_data.get('title', 'без названия')}")
+            logger.info(f"Источник: {content_data.get('source', 'неизвестен')}")
+            
             # Шаг 2: Генерируем пост через Groq
-            logger.info("🤖 Генерация поста через Groq...")
+            logger.info("🤖 ШАГ 2: Генерация поста через Groq...")
+            logger.info(f"Используется модель: {config.GROQ_MODEL}")
+            
             post_text = await self.groq_engine.generate_post(content_data)
             
+            if not post_text:
+                logger.error("❌ ОШИБКА: Groq не вернул текст поста!")
+                return False
+            
+            logger.info(f"✅ Пост сгенерирован: {len(post_text)} символов")
+            
             # Шаг 3: Публикуем в канал
-            logger.info("📤 Публикация в канал...")
+            logger.info("📤 ШАГ 3: Публикация в канал...")
+            logger.info(f"Канал: {config.CHANNEL_ID}")
+            
             message = await self.bot.send_message(
                 chat_id=config.CHANNEL_ID,
                 text=post_text,
@@ -74,10 +90,12 @@ class DreamOracleBot:
             return True
             
         except TelegramError as e:
-            logger.error(f"❌ Ошибка Telegram: {e}")
+            logger.error(f"❌ ОШИБКА Telegram API: {e}")
+            logger.exception("Полный стек ошибки Telegram:")
             return False
         except Exception as e:
-            logger.error(f"❌ Неожиданная ошибка: {e}", exc_info=True)
+            logger.error(f"❌ КРИТИЧЕСКАЯ ОШИБКА: {e}")
+            logger.exception("Полный стек ошибки:")
             return False
     
     async def publish_custom_post(self, user_request: str) -> bool:
@@ -118,6 +136,7 @@ class DreamOracleBot:
             
         except Exception as e:
             logger.error(f"❌ Ошибка публикации кастомного поста: {e}")
+            logger.exception("Полный стек ошибки кастомного поста:")
             return False
     
     async def test_connection(self) -> bool:
@@ -144,6 +163,7 @@ class DreamOracleBot:
             
         except TelegramError as e:
             print(f"❌ Ошибка подключения: {e}")
+            logger.exception("Полный стек ошибки подключения:")
             return False
 
 
